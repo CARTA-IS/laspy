@@ -1165,7 +1165,15 @@ class Writer(FileManager):
             old_size = self.header.data_offset
             self.data_provider._mmap.flush()
             self.data_provider.fileref.seek(old_size, 0)
-            self.data_provider.fileref.write(b"\x00" * (bytes_to_pad))
+            
+            while(bytes_to_pad > 0):
+                limit = pow(2,31)-1
+                if bytes_to_pad >= limit:
+                    self.data_provider.fileref.write(b"\x00" * (limit))
+                else:
+                    self.data_provider.fileref.write(b"\x00" * (bytes_to_pad))
+                bytes_to_pad = bytes_to_pad - limit
+
             self.data_provider.fileref.flush()
             self.data_provider.remap(flush = False, point_map = True)
             # Write Phase complete, enter rw mode?
